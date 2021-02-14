@@ -70,9 +70,9 @@ def find_nest(data, key):
 def find_unique_nest(data, key):
   results = list(find_nest(data, key))
   if len(results) == 0:
-    raise ValueError("Could not find key '{}'".format(key))
+    raise ValueError("Page layout not recognised: Could not find key '{}'".format(key))
   elif len(results) > 1:
-    raise ValueError("Multiple nodes called '{}'".format(key))
+    raise ValueError("Page layout not recognised: Multiple nodes called '{}'".format(key))
   return results[0]
 
 
