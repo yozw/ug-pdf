@@ -112,9 +112,11 @@ def compile_tex(tex, filename):
     with codecs.open(tex_filename, 'w', encoding='utf8') as f:
       f.write(tex)
 
-    subprocess.run(
+    cp = subprocess.run(
       ['pdflatex', '-interaction=batchmode', tex_filename],
       cwd=tmpdirname)
+    if cp.returncode != 0:
+      raise RuntimeError("pdflatex returned non-zero error code {}".format(cp.returncode))
 
     os.replace(os.path.join(tmpdirname, 'tab.pdf'), filename)
 
