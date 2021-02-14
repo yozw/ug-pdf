@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
+import codecs
 import urllib.request
+import html
 import json
 import os
 import re
@@ -13,6 +15,7 @@ _USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36
 _START = '<div class="js-store" data-content="'
 _END = '"></div>'
 _TEX_HEADER = r"""\documentclass{article}
+\usepackage[utf8]{inputenc}
 \usepackage{fancyvrb}
 \usepackage{fullpage}
 \usepackage{xcolor}
@@ -25,7 +28,7 @@ _TEX_HEADER = r"""\documentclass{article}
 _TEX_FOOTER = r"""
 \end{document}
 """
-_VERBATIM_START = r"\begin{Verbatim}[samepage=true, commandchars=\\\{\}]]"
+_VERBATIM_START = r"\begin{Verbatim}[samepage=true, commandchars=\\\{\}]"
 _VERBATIM_END = r"\end{Verbatim}"
 
 def fetch_url(url):
@@ -48,7 +51,7 @@ def extract_json_data(data):
   if end < 0:
     raise ValueError("Couldn't find end token")
 
-  data = data[start + len(_START):end].replace('&quot;', '"').replace('&mdash;', '-')
+  data = html.unescape(data[start + len(_START):end])
   return json.loads(data)
 
 
@@ -106,7 +109,7 @@ def generate_tex(content, title):
 def compile_tex(tex, filename):
   with tempfile.TemporaryDirectory() as tmpdirname:
     tex_filename = os.path.join(tmpdirname, 'tab.tex')
-    with open(tex_filename, 'w') as f:
+    with codecs.open(tex_filename, 'w', encoding='utf8') as f:
       f.write(tex)
 
     subprocess.run(
