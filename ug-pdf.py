@@ -14,7 +14,7 @@ import tempfile
 _USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36'
 _START = '<div class="js-store" data-content="'
 _END = '"></div>'
-_TEX_HEADER = r"""\documentclass{article}
+_TEX_HEADER = r"""\documentclass[10pt]{article}
 \usepackage[utf8]{inputenc}
 \usepackage{fancyvrb}
 \usepackage{fullpage}
@@ -30,6 +30,7 @@ _TEX_FOOTER = r"""
 """
 _VERBATIM_START = r"\begin{Verbatim}[samepage=true, commandchars=\\\{\}]"
 _VERBATIM_END = r"\end{Verbatim}"
+_DEBUG_OUTPUT = '/tmp/ug-pdf.tex'
 
 def fetch_url(url):
   request = urllib.request.Request(
@@ -87,6 +88,7 @@ def split_content(content):
 
 
 def texify(section):
+  section = section.replace('\\', '\\symbol{92}') #{\\textbackslash}')
   section = re.sub("\[ch\]([^\[]+)\[/ch\]", r"\\chord{\1}", section)
   return section
 
@@ -116,7 +118,8 @@ def compile_tex(tex, filename):
       ['pdflatex', '-interaction=batchmode', tex_filename],
       cwd=tmpdirname)
     if cp.returncode != 0:
-      raise RuntimeError("pdflatex returned non-zero error code {}".format(cp.returncode))
+      os.replace(tex_filename, _DEBUG_OUTPUT)
+      raise RuntimeError("pdflatex returned non-zero error code {}. See {}.".format(cp.returncode, _DEBUG_OUTPUT))
 
     os.replace(os.path.join(tmpdirname, 'tab.pdf'), filename)
 
