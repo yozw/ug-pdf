@@ -28,7 +28,7 @@ _TEX_FOOTER = r"""
 _VERBATIM_START = r"\begin{Verbatim}[samepage=true, commandchars=\\\{\}]]"
 _VERBATIM_END = r"\end{Verbatim}"
 
-def read_url(url):
+def fetch_url(url):
   request = urllib.request.Request(
       url, 
       data=None, 
@@ -36,12 +36,10 @@ def read_url(url):
           'User-Agent': _USER_AGENT
      }
   )
-  return urllib.request.urlopen(request).read().decode('utf-8').split('\n')
+  return urllib.request.urlopen(request).read().decode('utf-8')
 
 
-def get_json(url):
-  data = read_url(url)
-  data = "\n".join(data)
+def extract_json_data(data):
   start = data.find(_START)
 
   if start < 0:
@@ -125,10 +123,11 @@ def compile_tex(tex, filename):
 
 def main(argv):
   if len(argv) != 2:
-    print("Syntax: ug.py <url>")
+    print("Syntax: ug-pdf.py <url>")
     os.exit(1)
 
-  json_data = get_json(sys.argv[1])
+  data = fetch_url(argv[1])
+  json_data = extract_json_data(data)
   content, artist_name, song_name = parse_json_data(json_data)
   title = '{} - {}'.format(artist_name, song_name)
   tex = generate_tex(content, title)
