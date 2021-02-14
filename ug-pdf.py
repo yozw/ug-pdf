@@ -41,18 +41,14 @@ def fetch_url(url):
 
 def extract_json_data(data):
   start = data.find(_START)
-
   if start < 0:
     raise ValueError("Couldn't find start token")
 
-  data = data[start + len(_START):]
-  end = data.find(_END)
-
-  if start < 0:
+  end = data.find(_END, start)
+  if end < 0:
     raise ValueError("Couldn't find end token")
 
-  data = data[:end]
-  data = data.replace('&quot;', '"').replace('&mdash;', '-')
+  data = data[start + len(_START):end].replace('&quot;', '"').replace('&mdash;', '-')
   return json.loads(data)
 
 
@@ -74,6 +70,13 @@ def find_unique_nest(data, key):
   return results[0]
 
 
+def parse_json_data(json_data):
+  content = find_unique_nest(json_data, 'content')
+  artist_name = find_unique_nest(json_data, 'artist_name')
+  song_name = find_unique_nest(json_data, 'song_name')
+  return content, artist_name, song_name
+
+
 def split_content(content):
   content = content.replace('\r\n', '\n')
   sections = re.split(r"\[/?tab\]|\n\n", content)
@@ -83,13 +86,6 @@ def split_content(content):
 def texify(section):
   section = re.sub("\[ch\]([^\[]+)\[/ch\]", r"\\chord{\1}", section)
   return section
-
-
-def parse_json_data(json_data):
-  content = find_unique_nest(json_data, 'content')
-  artist_name = find_unique_nest(json_data, 'artist_name')
-  song_name = find_unique_nest(json_data, 'song_name')
-  return content, artist_name, song_name
 
 
 def generate_tex(content, title):
@@ -118,7 +114,6 @@ def compile_tex(tex, filename):
       cwd=tmpdirname)
 
     os.replace(os.path.join(tmpdirname, 'tab.pdf'), filename)
-  print("Wrote {}".format(filename))
 
 
 def main(argv):
@@ -130,8 +125,10 @@ def main(argv):
   json_data = extract_json_data(data)
   content, artist_name, song_name = parse_json_data(json_data)
   title = '{} - {}'.format(artist_name, song_name)
+  filename = '{}.pdf'.format(title)
   tex = generate_tex(content, title)
-  compile_tex(tex, '{}.pdf'.format(title))
+  compile_tex(tex, filename)
+  print("Wrote {}".format(filename))
 
 
 if __name__ == '__main__':
