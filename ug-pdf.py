@@ -88,7 +88,7 @@ def split_content(content):
 
 
 def texify(section):
-  section = section.replace('\\', '\\symbol{92}') #{\\textbackslash}')
+  section = section.replace('\\', '\\symbol{92}')
   section = re.sub("\[ch\]([^\[]+)\[/ch\]", r"\\chord{\1}", section)
   return section
 
