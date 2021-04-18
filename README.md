@@ -8,5 +8,5 @@
 
 ## Webserver usage
 
-Go to http://www.colatex.net/ug_pdf.
+Go to http://www.colatex.net/ug-pdf.
  
