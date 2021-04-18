@@ -1,8 +1,12 @@
-# ug-pdf
+# ug_pdf
 
-Usage:
+## Standalone usage
 
 ```
-./ug-pdf.py <url>
+./ug_pdf.py <url>
 ```
+
+## Webserver usage
+
+Go to http://www.colatex.net/ug_pdf.
  
