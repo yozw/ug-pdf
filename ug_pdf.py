@@ -6,6 +6,7 @@ import html
 import json
 import os
 import re
+import shutil
 import sys
 import subprocess
 import tempfile
@@ -118,25 +119,31 @@ def compile_tex(tex, filename):
       ['pdflatex', '-interaction=batchmode', tex_filename],
       cwd=tmpdirname)
     if cp.returncode != 0:
-      os.replace(tex_filename, _DEBUG_OUTPUT)
-      raise RuntimeError("pdflatex returned non-zero error code {}. See {}.".format(cp.returncode, _DEBUG_OUTPUT))
+      shutil.move(tex_filename, _DEBUG_OUTPUT)
+      debug_log = tex_filename.replace('.tex', '.log')
+      raise RuntimeError("pdflatex returned non-zero error code {}. See {} for input. Ouput:\n{}".format(
+        cp.returncode, _DEBUG_OUTPUT, "\n".join(open(debug_log).readlines())))
 
-    os.replace(os.path.join(tmpdirname, 'tab.pdf'), filename)
+    shutil.move(os.path.join(tmpdirname, 'tab.pdf'), filename)
 
 
-def main(argv):
-  if len(argv) != 2:
-    print("Syntax: ug-pdf.py <url>")
-    os.exit(1)
-
-  data = fetch_url(argv[1])
+def convert(url):
+  data = fetch_url(url)
   json_data = extract_json_data(data)
   content, artist_name, song_name = parse_json_data(json_data)
   title = '{} - {}'.format(artist_name, song_name)
   filename = '{}.pdf'.format(title)
   tex = generate_tex(content, title)
   compile_tex(tex, filename)
-  print("Wrote {}".format(filename))
+  return filename
+
+
+def main(argv):
+  if len(argv) != 2:
+    print("Syntax: ug_pdf.py <url>")
+    os.exit(1)
+  output = convert(argv[1])
+  print("Wrote {}".format(output))
 
 
 if __name__ == '__main__':
