@@ -21,6 +21,8 @@ def main():
         url = request.form['url']
         with tempfile.TemporaryDirectory() as path:
             os.chdir(path)
+            if not url.startswith('https://tabs.ultimate-guitar.com/') or len(url) > 250:
+                raise ValueError('Invalid URL')
             output_path = ug_pdf.convert(url)
             with open(output_path, 'rb') as f:
                 content = f.read()
